@@ -47,7 +47,6 @@ dependencies {
     implementation("dev.kord:kord-core")
     implementation("dev.kord:kord-common")
     implementation("io.realm.kotlin:library-base:$realmVersion")
-    implementation("com.aallam.openai:openai-client:3.3.0")
 }
 
 tasks.test {

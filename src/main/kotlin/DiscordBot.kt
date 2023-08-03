@@ -20,6 +20,7 @@ import kotlinx.datetime.Clock
 suspend fun DiscordBot(
     token: String,
     channelId: String,
+    replicateToken: String
 ) {
     val network = Network()
 
@@ -49,7 +50,7 @@ suspend fun DiscordBot(
     /*runCatching {
         val image = Image.fromUrl(
             HttpClient(),
-            "https://raw.githubusercontent.com/jakepurple13/OtakuWorld/develop/otakumanager/src/main/res/drawable/otakumanager_logo.png"
+            "https://static.displate.com/280x392/displate/2022-12-25/66e4b04cc4cb743486a3991ff8447f4f_2316d96de92d16d984b948ba1b24dcae.jpg"
         )
 
         kord.editSelf {
@@ -75,9 +76,7 @@ suspend fun DiscordBot(
         when (command.strings["neko"]!!) {
             "random" -> network.loadRandomImage()
 
-            "Amun" -> runCatching {
-                error("")
-            }
+            "Amun" -> network.pixrayLoad(replicateToken)
 
             else -> Result.failure(Exception(""))
         }
