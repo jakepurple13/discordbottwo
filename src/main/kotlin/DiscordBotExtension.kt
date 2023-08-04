@@ -1,8 +1,10 @@
 import com.kotlindiscord.kord.extensions.ExtensibleBot
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.edit
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 
@@ -30,6 +32,8 @@ suspend fun DiscordBotExtension(
     val c = bot.kordRef.getChannelOf<TextChannel>(Snowflake(channelId))
 
     c?.createSilentMessage("NekoBot is booting up...Please wait...")
+        ?.also { delay(1500) }
+        ?.edit { content = "NekoBot is Online!" }
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
@@ -49,8 +53,6 @@ suspend fun DiscordBotExtension(
             }
         }
     )
-
-    c?.createSilentMessage("NekoBot is Online!")
 
     bot.start()
 

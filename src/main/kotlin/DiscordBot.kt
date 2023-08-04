@@ -248,11 +248,9 @@ suspend fun DiscordBot(
     Thread.currentThread().join()
 }
 
-suspend fun TextChannel.createSilentMessage(content: String) {
-    createMessage {
-        this.content = content
-        suppressNotifications = true
-    }
+suspend fun TextChannel.createSilentMessage(content: String) = createMessage {
+    this.content = content
+    suppressNotifications = true
 }
 
 val Purple = Color(0xFF4a148c.toInt())
