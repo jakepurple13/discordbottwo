@@ -28,6 +28,11 @@ kotlin {
 repositories {
     mavenCentral()
     maven("https://repo.spring.io/milestone")
+    maven {
+        name = "Sonatype Snapshots"
+        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+    }
+
 }
 
 dependencies {
@@ -47,6 +52,7 @@ dependencies {
     implementation("dev.kord:kord-core")
     implementation("dev.kord:kord-common")
     implementation("io.realm.kotlin:library-base:$realmVersion")
+    implementation("com.kotlindiscord.kord.extensions:kord-extensions:1.5.8-SNAPSHOT")
 }
 
 tasks.test {
