@@ -257,10 +257,19 @@ val Purple = Color(0xFF4a148c.toInt())
 val Blue = Color(0xFF42a5f5.toInt())
 val Red = Color(0xFFe74c3c.toInt())
 
-data class NekoImage(
-    val url: String,
+sealed class NekoImageType(
     val artist: String
 )
+
+class NekoImage(
+    val url: String,
+    artist: String
+) : NekoImageType(artist)
+
+class LocalNekoImage(
+    val path: String,
+    artist: String
+) : NekoImageType(artist)
 
 suspend fun Result<Any>.respondWithError(response: DeferredPublicMessageInteractionResponseBehavior) = onFailure {
     response.respond {

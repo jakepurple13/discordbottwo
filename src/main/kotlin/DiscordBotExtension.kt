@@ -21,9 +21,9 @@ suspend fun DiscordBotExtension(
         extensions {
             add { NekoExtension(network) }
             add { MarvelSnapExtension(network) }
-
+            add { StableDiffusionExtension(network) }
             help {
-                pingInReply = false
+                pingInReply = true
                 color { Purple }
             }
         }

@@ -11,7 +11,7 @@ suspend fun main(args: Array<String>) {
 
     when (TESTING) {
         Type.Testing -> {
-            network.showMarvelSnapCards()
+            network.stableDiffusion("anime landscape")
                 .onSuccess { println(it) }
                 .onFailure { it.printStackTrace() }
         }

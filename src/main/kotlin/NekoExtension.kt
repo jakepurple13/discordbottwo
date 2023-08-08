@@ -6,7 +6,9 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.converters.i
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
+import dev.kord.rest.builder.message.create.addFile
 import dev.kord.rest.builder.message.create.embed
+import java.nio.file.Path
 
 class NekoExtension(
     private val network: Network
@@ -22,17 +24,25 @@ class NekoExtension(
                 respond {
                     when (arguments.nekoType) {
                         NekoType.Random -> network.loadRandomImage()
-                        NekoType.Amun -> network.pixrayLoad()
+                        NekoType.Amun -> network.stableDiffusion("")//network.pixrayLoad()
                         NekoType.Cat -> network.catApi()
                     }
                         .onSuccess { model ->
                             content = "Here is your neko image!"
-                            embed {
-                                image = model.url
-                                footer {
-                                    text = "By: ${model.artist}"
+                            when (model) {
+                                is LocalNekoImage -> {
+                                    addFile(Path.of(model.path))
                                 }
-                                color = Blue
+
+                                is NekoImage -> {
+                                    embed {
+                                        image = model.url
+                                        footer {
+                                            text = "By: ${model.artist}"
+                                        }
+                                        color = Blue
+                                    }
+                                }
                             }
                         }
                         .respondWithError()
