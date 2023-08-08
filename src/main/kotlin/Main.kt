@@ -11,7 +11,7 @@ suspend fun main(args: Array<String>) {
 
     when (TESTING) {
         Type.Testing -> {
-            network.stableDiffusion("anime landscape")
+            network.stableDiffusionModels()
                 .onSuccess { println(it) }
                 .onFailure { it.printStackTrace() }
         }

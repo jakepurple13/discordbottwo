@@ -51,14 +51,32 @@ class Network(
             .let { json.decodeFromString<MarvelSnapModel>(it) }
     }
 
-    suspend fun stableDiffusion(prompt: String) = runCatching {
+    suspend fun stableDiffusionModels() = runCatching {
+        client.get("http://127.0.0.1:7860/sdapi/v1/sd-models") {
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            timeout {
+                requestTimeoutMillis = Long.MAX_VALUE
+                connectTimeoutMillis = Long.MAX_VALUE
+            }
+        }
+            .bodyAsText()
+            .let { json.decodeFromString<List<StableDiffusionModel>>(it) }
+    }
+
+    suspend fun stableDiffusion(prompt: String, modelName: String? = null) = runCatching {
         client.post("http://127.0.0.1:7860/sdapi/v1/txt2img") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             setBody(
                 StableDiffusionBody(
                     prompt = prompt,
-                    styles = listOf("Anime")
+                    styles = listOf("Anime"),
+                    overrideOptions = modelName?.let {
+                        OverriddenOptions(
+                            sdModelCheckpoint = it
+                        )
+                    }
                 )
             )
             timeout {
@@ -68,6 +86,7 @@ class Network(
         }
             .bodyAsText()
             .let { json.decodeFromString<StableDiffusionResponse>(it) }
+            .also { println(it) }
             .images
             .first()
             .let {
@@ -125,7 +144,17 @@ class Network(
 data class StableDiffusionBody(
     val prompt: String,
     val steps: Int = 5,
-    val styles: List<String>
+    val styles: List<String>,
+    @SerialName("override_settings")
+    val overrideOptions: OverriddenOptions?
+)
+
+@Serializable
+data class OverriddenOptions(
+    @SerialName("sd_model_checkpoint")
+    val sdModelCheckpoint: String,
+    @SerialName("filter_nsfw")
+    val filterNsfw: Boolean = false
 )
 
 @Serializable
@@ -200,4 +229,14 @@ data class Parameters(
     val sendImages: Boolean,
     @SerialName("save_images")
     val saveImages: Boolean,
+)
+
+@Serializable
+data class StableDiffusionModel(
+    val title: String,
+    @SerialName("model_name")
+    val modelName: String,
+    val hash: String,
+    val sha256: String,
+    val filename: String,
 )
