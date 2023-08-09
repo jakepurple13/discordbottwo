@@ -46,7 +46,7 @@ suspend fun DiscordBotExtension(
                 description = """
                     Meow is back online!
                     
-                    To get more Stable Diffusion models to suggest, press on the button below!
+                    To get more Stable Diffusion models or loras to suggest, press on the buttons below!
                     To use Stable Diffusion, type `/stablediffusion`
                     Here are the extensions we have access to. To use them, use <lora:[alias here]>
                     ${network.stableDiffusionLoras().getOrNull().orEmpty().joinToString("\n") { it.alias }}
@@ -57,7 +57,10 @@ suspend fun DiscordBotExtension(
                 """.trimIndent()
                 color = Emerald
             }
-            actionRow { linkButton("https://huggingface.co") { label = "Stable Diffusion Models" } }
+            actionRow {
+                linkButton("https://huggingface.co") { label = "Stable Diffusion Models" }
+                linkButton("https://civitai.com/") { label = "Models and Loras" }
+            }
         }
 
     Runtime.getRuntime().addShutdownHook(
