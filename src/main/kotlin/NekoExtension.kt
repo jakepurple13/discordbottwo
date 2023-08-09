@@ -6,9 +6,8 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.converters.i
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
-import dev.kord.rest.builder.message.create.addFile
 import dev.kord.rest.builder.message.create.embed
-import java.nio.file.Path
+import io.ktor.client.request.forms.*
 
 class NekoExtension(
     private val network: Network
@@ -31,7 +30,7 @@ class NekoExtension(
                             content = "Here is your neko image!"
                             when (model) {
                                 is LocalNekoImage -> {
-                                    addFile(Path.of(model.path))
+                                    addFile("output.png", ChannelProvider { model.byteReadChannel })
                                 }
 
                                 is NekoImage -> {

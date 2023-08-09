@@ -5,11 +5,11 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import java.io.File
 import java.util.*
 
 class Network(
@@ -110,10 +110,8 @@ class Network(
             .images
             .first()
             .let {
-                val f = File("output.png")
-                f.writeBytes(Base64.getDecoder().decode(it))
                 LocalNekoImage(
-                    path = f.path,
+                    byteReadChannel = ByteReadChannel(Base64.getDecoder().decode(it)),
                     artist = "Stable Diffusion"
                 )
             }

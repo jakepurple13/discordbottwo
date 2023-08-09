@@ -23,6 +23,7 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.FollowupMessageModifyBuilder
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
+import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 
@@ -269,7 +270,7 @@ class NekoImage(
 ) : NekoImageType(artist)
 
 class LocalNekoImage(
-    val path: String,
+    val byteReadChannel: ByteReadChannel,
     artist: String
 ) : NekoImageType(artist)
 
