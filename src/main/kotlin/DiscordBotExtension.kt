@@ -47,6 +47,10 @@ suspend fun DiscordBotExtension(
                     Meow is back online!
                     
                     To get more Stable Diffusion models to suggest, press on the button below!
+                    To use Stable Diffusion, type `/stablediffusion`
+                    Here are the extensions we have access to. To use them, use <lora:[alias here]>
+                    ${network.stableDiffusionLoras().getOrNull().orEmpty().joinToString("\n") { it.alias }}
+                    
                     To get a random neko image, type `/neko random`
                     To get a random cat image, type `/neko cat`
                     To view Marvel Snap cards, type `/snapcards`

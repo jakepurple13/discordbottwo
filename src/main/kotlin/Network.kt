@@ -51,6 +51,20 @@ class Network(
             .let { json.decodeFromString<MarvelSnapModel>(it) }
     }
 
+    suspend fun stableDiffusionLoras() = runCatching {
+        client.get("http://127.0.0.1:7860/sdapi/v1/loras") {
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            timeout {
+                requestTimeoutMillis = Long.MAX_VALUE
+                connectTimeoutMillis = Long.MAX_VALUE
+            }
+        }
+            .bodyAsText()
+            .let { json.decodeFromString<List<StableDiffusionLora>>(it) }
+    }
+        .onFailure { it.printStackTrace() }
+
     suspend fun stableDiffusionModels() = runCatching {
         client.get("http://127.0.0.1:7860/sdapi/v1/sd-models") {
             contentType(ContentType.Application.Json)
@@ -245,4 +259,10 @@ data class StableDiffusionModel(
     @SerialName("model_name")
     val modelName: String,
     val filename: String,
+)
+
+@Serializable
+data class StableDiffusionLora(
+    val name: String,
+    val alias: String
 )
