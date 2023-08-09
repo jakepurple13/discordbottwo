@@ -20,6 +20,7 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.create.FollowupMessageCreateBuilder
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.modify.FollowupMessageModifyBuilder
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 import kotlinx.coroutines.runBlocking
@@ -283,6 +284,16 @@ suspend fun Result<Any>.respondWithError(response: DeferredPublicMessageInteract
 }
 
 context (FollowupMessageCreateBuilder)
+suspend fun Result<Any>.respondWithError() = onFailure {
+    content = "Error!"
+    embed {
+        title = "Something went wrong"
+        description = it.stackTraceToString()
+        color = Red
+    }
+}
+
+context (FollowupMessageModifyBuilder)
 suspend fun Result<Any>.respondWithError() = onFailure {
     content = "Error!"
     embed {

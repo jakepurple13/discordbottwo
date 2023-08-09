@@ -63,14 +63,20 @@ class Network(
             .bodyAsText()
             .let { json.decodeFromString<List<StableDiffusionModel>>(it) }
     }
+        .onFailure { it.printStackTrace() }
 
-    suspend fun stableDiffusion(prompt: String, modelName: String? = null) = runCatching {
+    suspend fun stableDiffusion(
+        prompt: String,
+        modelName: String? = null,
+        negativePrompt: String = ""
+    ) = runCatching {
         client.post("http://127.0.0.1:7860/sdapi/v1/txt2img") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             setBody(
                 StableDiffusionBody(
                     prompt = prompt,
+                    negativePrompt = negativePrompt,
                     styles = listOf("Anime"),
                     overrideOptions = modelName?.let {
                         OverriddenOptions(
@@ -145,6 +151,8 @@ data class StableDiffusionBody(
     val prompt: String,
     val steps: Int = 5,
     val styles: List<String>,
+    @SerialName("negative_prompt")
+    val negativePrompt: String = "",
     @SerialName("override_settings")
     val overrideOptions: OverriddenOptions?
 )
@@ -236,7 +244,5 @@ data class StableDiffusionModel(
     val title: String,
     @SerialName("model_name")
     val modelName: String,
-    val hash: String,
-    val sha256: String,
     val filename: String,
 )
