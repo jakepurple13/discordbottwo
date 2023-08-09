@@ -4,6 +4,8 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.modify.actionRow
+import dev.kord.rest.builder.message.modify.embed
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
@@ -37,7 +39,22 @@ suspend fun DiscordBotExtension(
 
     c?.createSilentMessage("NekoBot is booting up...Please wait...")
         ?.also { delay(1500) }
-        ?.edit { content = "NekoBot is Online!" }
+        ?.edit {
+            content = "NekoBot is Online!"
+            embed {
+                title = "NekoBot is Online!"
+                description = """
+                    Meow is back online!
+                    
+                    To get more Stable Diffusion models to suggest, press on the button below!
+                    To get a random neko image, type `/neko random`
+                    To get a random cat image, type `/neko cat`
+                    To view Marvel Snap cards, type `/snapcards`
+                """.trimIndent()
+                color = Emerald
+            }
+            actionRow { linkButton("https://huggingface.co") { label = "Stable Diffusion Models" } }
+        }
 
     Runtime.getRuntime().addShutdownHook(
         Thread {

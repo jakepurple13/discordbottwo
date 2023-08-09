@@ -257,6 +257,7 @@ suspend fun TextChannel.createSilentMessage(content: String) = createMessage {
 val Purple = Color(0xFF4a148c.toInt())
 val Blue = Color(0xFF42a5f5.toInt())
 val Red = Color(0xFFe74c3c.toInt())
+val Emerald = Color(0xFF2ecc71.toInt())
 
 sealed class NekoImageType(
     val artist: String
