@@ -33,6 +33,11 @@ suspend fun DiscordBotExtension(
         hooks {
             kordShutdownHook = true
         }
+
+        errorResponse { message, type ->
+            type.error.printStackTrace()
+            println(message)
+        }
     }
 
     val c = bot.kordRef.getChannelOf<TextChannel>(Snowflake(channelId))

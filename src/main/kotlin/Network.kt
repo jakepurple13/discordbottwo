@@ -7,10 +7,10 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.delay
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.util.*
+
+private const val STABLE_DIFFUSION_URL = "http://127.0.0.1:7860/sdapi/v1"
 
 class Network(
     private val catApiToken: String = "",
@@ -52,7 +52,7 @@ class Network(
     }
 
     suspend fun stableDiffusionLoras() = runCatching {
-        client.get("http://127.0.0.1:7860/sdapi/v1/loras") {
+        client.get("$STABLE_DIFFUSION_URL/loras") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             timeout {
@@ -65,8 +65,22 @@ class Network(
     }
         .onFailure { it.printStackTrace() }
 
+    suspend fun stableDiffusionSamplers() = runCatching {
+        client.get("$STABLE_DIFFUSION_URL/samplers") {
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            timeout {
+                requestTimeoutMillis = Long.MAX_VALUE
+                connectTimeoutMillis = Long.MAX_VALUE
+            }
+        }
+            .bodyAsText()
+            .let { json.decodeFromString<List<StableDiffusionSamplers>>(it) }
+    }
+        .onFailure { it.printStackTrace() }
+
     suspend fun stableDiffusionModels() = runCatching {
-        client.get("http://127.0.0.1:7860/sdapi/v1/sd-models") {
+        client.get("$STABLE_DIFFUSION_URL/sd-models") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             timeout {
@@ -82,16 +96,21 @@ class Network(
     suspend fun stableDiffusion(
         prompt: String,
         modelName: String? = null,
-        negativePrompt: String = ""
+        cfgScale: Double = 7.0,
+        steps: Int = 20,
+        negativePrompt: String = "",
+        sampler: String? = null
     ) = runCatching {
-        client.post("http://127.0.0.1:7860/sdapi/v1/txt2img") {
+        client.post("$STABLE_DIFFUSION_URL/txt2img") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             setBody(
                 StableDiffusionBody(
                     prompt = prompt,
                     negativePrompt = negativePrompt,
-                    styles = listOf("Anime"),
+                    cfgScale = cfgScale,
+                    steps = steps,
+                    samplerIndex = sampler ?: "Euler a",
                     overrideOptions = modelName?.let {
                         OverriddenOptions(
                             sdModelCheckpoint = it
@@ -115,6 +134,42 @@ class Network(
                     artist = "Stable Diffusion"
                 )
             }
+    }
+
+    suspend fun retrieveStableDiffusion(
+        prompt: String,
+        modelName: String? = null,
+        cfgScale: Double = 7.0,
+        steps: Int = 20,
+        negativePrompt: String = "",
+        sampler: String? = null
+    ) = runCatching {
+        client.post("$STABLE_DIFFUSION_URL/txt2img") {
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            setBody(
+                StableDiffusionBody(
+                    prompt = prompt,
+                    negativePrompt = negativePrompt,
+                    cfgScale = cfgScale,
+                    steps = steps,
+                    samplerIndex = sampler ?: "Euler a",
+                    overrideOptions = modelName?.let {
+                        OverriddenOptions(
+                            sdModelCheckpoint = it
+                        )
+                    }
+                )
+            )
+            timeout {
+                requestTimeoutMillis = Long.MAX_VALUE
+                connectTimeoutMillis = Long.MAX_VALUE
+            }
+        }
+            .bodyAsText()
+            .let { json.decodeFromString<StableDiffusionResponse>(it) }
+            .also { println(it) }
+
     }
 
     suspend fun pixrayLoad(): Result<NekoImage> {
@@ -157,110 +212,3 @@ class Network(
         }
     }
 }
-
-@Serializable
-data class StableDiffusionBody(
-    val prompt: String,
-    val steps: Int = 5,
-    val styles: List<String>,
-    @SerialName("negative_prompt")
-    val negativePrompt: String = "",
-    @SerialName("override_settings")
-    val overrideOptions: OverriddenOptions?
-)
-
-@Serializable
-data class OverriddenOptions(
-    @SerialName("sd_model_checkpoint")
-    val sdModelCheckpoint: String,
-    @SerialName("filter_nsfw")
-    val filterNsfw: Boolean = false
-)
-
-@Serializable
-data class StableDiffusionResponse(
-    val images: List<String>,
-    val parameters: Parameters,
-    val info: String,
-)
-
-@Serializable
-data class Parameters(
-    @SerialName("enable_hr")
-    val enableHr: Boolean,
-    @SerialName("denoising_strength")
-    val denoisingStrength: Long,
-    @SerialName("firstphase_width")
-    val firstphaseWidth: Long,
-    @SerialName("firstphase_height")
-    val firstphaseHeight: Long,
-    @SerialName("hr_scale")
-    val hrScale: Double,
-    @SerialName("hr_second_pass_steps")
-    val hrSecondPassSteps: Long,
-    @SerialName("hr_resize_x")
-    val hrResizeX: Long,
-    @SerialName("hr_resize_y")
-    val hrResizeY: Long,
-    @SerialName("hr_prompt")
-    val hrPrompt: String,
-    @SerialName("hr_negative_prompt")
-    val hrNegativePrompt: String,
-    val prompt: String,
-    val seed: Long,
-    val subseed: Long,
-    @SerialName("subseed_strength")
-    val subseedStrength: Long,
-    @SerialName("seed_resize_from_h")
-    val seedResizeFromH: Long,
-    @SerialName("seed_resize_from_w")
-    val seedResizeFromW: Long,
-    @SerialName("batch_size")
-    val batchSize: Long,
-    @SerialName("n_iter")
-    val nIter: Long,
-    val steps: Long,
-    @SerialName("cfg_scale")
-    val cfgScale: Double,
-    val width: Long,
-    val height: Long,
-    @SerialName("restore_faces")
-    val restoreFaces: Boolean,
-    val tiling: Boolean,
-    @SerialName("do_not_save_samples")
-    val doNotSaveSamples: Boolean,
-    @SerialName("do_not_save_grid")
-    val doNotSaveGrid: Boolean,
-//    @SerialName("negative_prompt")
-//    val negativePrompt: Any?,
-    @SerialName("s_min_uncond")
-    val sMinUncond: Double,
-    @SerialName("s_churn")
-    val sChurn: Double,
-    @SerialName("s_tmin")
-    val sTmin: Double,
-    @SerialName("s_noise")
-    val sNoise: Double,
-    @SerialName("override_settings_restore_afterwards")
-    val overrideSettingsRestoreAfterwards: Boolean,
-    @SerialName("sampler_index")
-    val samplerIndex: String,
-    @SerialName("send_images")
-    val sendImages: Boolean,
-    @SerialName("save_images")
-    val saveImages: Boolean,
-)
-
-@Serializable
-data class StableDiffusionModel(
-    val title: String,
-    @SerialName("model_name")
-    val modelName: String,
-    val filename: String,
-)
-
-@Serializable
-data class StableDiffusionLora(
-    val name: String,
-    val alias: String
-)
