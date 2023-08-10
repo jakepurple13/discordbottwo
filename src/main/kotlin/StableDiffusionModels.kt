@@ -8,6 +8,7 @@ data class StableDiffusionBody(
     val prompt: String,
     val cfgScale: Double,
     val steps: Int,
+    val seed: Long,
     @SerialName("sampler_index")
     val samplerIndex: String,
     @SerialName("negative_prompt")

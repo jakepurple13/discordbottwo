@@ -2,10 +2,7 @@
 
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.optionalStringChoice
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingDecimal
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
-import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
-import com.kotlindiscord.kord.extensions.commands.converters.impl.string
+import com.kotlindiscord.kord.extensions.commands.converters.impl.*
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
@@ -40,7 +37,8 @@ class StableDiffusionExtension(
                             negativePrompt = arguments.negativePrompt.orEmpty(),
                             cfgScale = arguments.cfgScale,
                             steps = arguments.steps,
-                            sampler = arguments.sampler
+                            sampler = arguments.sampler,
+                            seed = arguments.seed ?: -1
                         )
                             .onSuccess { model ->
                                 content = "${member?.mention} your image is ready!"
@@ -51,6 +49,7 @@ class StableDiffusionExtension(
                                     field("Model") { arguments.model ?: "7th_anime_v3_C.ckpt [6fe2f683b9]" }
                                     field("Cfg Scale") { model.parameters.cfgScale.toString() }
                                     field("Steps") { model.parameters.steps.toString() }
+                                    field("Seed") { model.parameters.seed.toString() }
                                     field("Sampling Method") {
                                         model.parameters.samplerName ?: model.parameters.samplerIndex
                                     }
@@ -131,6 +130,11 @@ class StableDiffusionExtension(
             samplers?.forEach {
                 choice(it.name, it.name)
             }
+        }
+
+        val seed by optionalLong {
+            name = "seed"
+            description = "A seed to generate similar images"
         }
     }
 }

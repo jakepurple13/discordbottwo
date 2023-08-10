@@ -113,7 +113,8 @@ class Network(
         cfgScale: Double = 7.0,
         steps: Int = 20,
         negativePrompt: String = "",
-        sampler: String? = null
+        sampler: String? = null,
+        seed: Long = -1
     ) = runCatching {
         client.post("$STABLE_DIFFUSION_URL/txt2img") {
             contentType(ContentType.Application.Json)
@@ -125,6 +126,7 @@ class Network(
                     cfgScale = cfgScale,
                     steps = steps,
                     samplerIndex = sampler ?: "Euler a",
+                    seed = seed,
                     overrideOptions = modelName?.let {
                         OverriddenOptions(
                             sdModelCheckpoint = it
@@ -156,7 +158,8 @@ class Network(
         cfgScale: Double = 7.0,
         steps: Int = 20,
         negativePrompt: String = "",
-        sampler: String? = null
+        sampler: String? = null,
+        seed: Long = -1
     ) = runCatching {
         client.post("$STABLE_DIFFUSION_URL/txt2img") {
             contentType(ContentType.Application.Json)
@@ -168,6 +171,7 @@ class Network(
                     cfgScale = cfgScale,
                     steps = steps,
                     samplerIndex = sampler ?: "Euler a",
+                    seed = seed,
                     overrideOptions = modelName?.let {
                         OverriddenOptions(
                             sdModelCheckpoint = it
