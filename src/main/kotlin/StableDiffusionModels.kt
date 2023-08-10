@@ -1,14 +1,18 @@
 import io.ktor.utils.io.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.util.*
 
 @Serializable
-data class StableDiffusionBody(
+sealed class StableDiffusionTxt2Image
+
+@Serializable
+class StableDiffusionBody(
+    val seed: Long,
     val prompt: String,
     val cfgScale: Double,
     val steps: Int,
-    val seed: Long,
     @SerialName("sampler_index")
     val samplerIndex: String,
     @SerialName("negative_prompt")
@@ -17,7 +21,22 @@ data class StableDiffusionBody(
     val batchSize: Long = 1,
     @SerialName("override_settings")
     val overrideOptions: OverriddenOptions?
-)
+) : StableDiffusionTxt2Image()
+
+@Serializable
+class StableDiffusionBodyNoSeed(
+    val prompt: String,
+    val cfgScale: Double,
+    val steps: Int,
+    @SerialName("sampler_index")
+    val samplerIndex: String,
+    @SerialName("negative_prompt")
+    val negativePrompt: String = "",
+    @SerialName("batch_size")
+    val batchSize: Long = 1,
+    @SerialName("override_settings")
+    val overrideOptions: OverriddenOptions?
+) : StableDiffusionTxt2Image()
 
 @Serializable
 data class OverriddenOptions(
@@ -33,6 +52,7 @@ data class StableDiffusionResponse(
     val parameters: Parameters,
     val info: String,
 ) {
+    fun infoToModel(json: Json) = json.decodeFromString<StableDiffusionResponseInfo>(info)
     fun imagesAsByteChannel() = images.map {
         ByteReadChannel(Base64.getDecoder().decode(it))
     }
@@ -150,4 +170,63 @@ data class State(
     val samplingStep: Long,
     @SerialName("sampling_steps")
     val samplingSteps: Long,
+)
+
+@Serializable
+data class StableDiffusionResponseInfo(
+    val prompt: String,
+    @SerialName("all_prompts")
+    val allPrompts: List<String>,
+    @SerialName("negative_prompt")
+    val negativePrompt: String?,
+    @SerialName("all_negative_prompts")
+    val allNegativePrompts: List<String>,
+    val seed: Long,
+    @SerialName("all_seeds")
+    val allSeeds: List<Long>,
+    val subseed: Long,
+    @SerialName("all_subseeds")
+    val allSubseeds: List<Long>,
+    @SerialName("subseed_strength")
+    val subseedStrength: Long,
+    val width: Long,
+    val height: Long,
+    @SerialName("sampler_name")
+    val samplerName: String,
+    @SerialName("cfg_scale")
+    val cfgScale: Double,
+    val steps: Long,
+    @SerialName("batch_size")
+    val batchSize: Long,
+    @SerialName("restore_faces")
+    val restoreFaces: Boolean,
+    @SerialName("sd_model_hash")
+    val sdModelHash: String,
+    @SerialName("seed_resize_from_w")
+    val seedResizeFromW: Long,
+    @SerialName("seed_resize_from_h")
+    val seedResizeFromH: Long,
+    @SerialName("denoising_strength")
+    val denoisingStrength: Long,
+    @SerialName("extra_generation_params")
+    val extraGenerationParams: ExtraGenerationParams,
+    @SerialName("index_of_first_image")
+    val indexOfFirstImage: Long,
+    val infotexts: List<String>,
+    @SerialName("job_timestamp")
+    val jobTimestamp: String,
+    @SerialName("clip_skip")
+    val clipSkip: Long,
+    @SerialName("is_using_inpainting_conditioning")
+    val isUsingInpaintingConditioning: Boolean,
+)
+
+@Serializable
+data class ExtraGenerationParams(
+    @SerialName("Style Selector Enabled")
+    val styleSelectorEnabled: Boolean,
+    @SerialName("Style Selector Randomize")
+    val styleSelectorRandomize: Boolean,
+    @SerialName("Style Selector Style")
+    val styleSelectorStyle: String,
 )

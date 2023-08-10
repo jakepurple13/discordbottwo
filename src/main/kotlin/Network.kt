@@ -16,7 +16,7 @@ class Network(
     private val catApiToken: String = "",
     private val replicateToken: String = ""
 ) {
-    private val json = Json {
+    val json = Json {
         isLenient = true
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -159,25 +159,40 @@ class Network(
         steps: Int = 20,
         negativePrompt: String = "",
         sampler: String? = null,
-        seed: Long = -1
+        seed: Long?
     ) = runCatching {
         client.post("$STABLE_DIFFUSION_URL/txt2img") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             setBody(
-                StableDiffusionBody(
-                    prompt = prompt,
-                    negativePrompt = negativePrompt,
-                    cfgScale = cfgScale,
-                    steps = steps,
-                    samplerIndex = sampler ?: "Euler a",
-                    seed = seed,
-                    overrideOptions = modelName?.let {
-                        OverriddenOptions(
-                            sdModelCheckpoint = it
-                        )
-                    }
-                )
+                if (seed != null) {
+                    StableDiffusionBody(
+                        prompt = prompt,
+                        negativePrompt = negativePrompt,
+                        cfgScale = cfgScale,
+                        steps = steps,
+                        samplerIndex = sampler ?: "Euler a",
+                        seed = seed,
+                        overrideOptions = modelName?.let {
+                            OverriddenOptions(
+                                sdModelCheckpoint = it
+                            )
+                        }
+                    )
+                } else {
+                    StableDiffusionBodyNoSeed(
+                        prompt = prompt,
+                        negativePrompt = negativePrompt,
+                        cfgScale = cfgScale,
+                        steps = steps,
+                        samplerIndex = sampler ?: "Euler a",
+                        overrideOptions = modelName?.let {
+                            OverriddenOptions(
+                                sdModelCheckpoint = it
+                            )
+                        }
+                    )
+                }
             )
             timeout {
                 requestTimeoutMillis = Long.MAX_VALUE
