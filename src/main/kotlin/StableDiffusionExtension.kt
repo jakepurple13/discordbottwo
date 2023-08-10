@@ -7,11 +7,15 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalString
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.interaction.followup.edit
+import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.request.forms.*
+import kotlinx.datetime.Clock
+import kotlin.time.Duration.Companion.seconds
 
 class StableDiffusionExtension(
     private val network: Network
@@ -59,6 +63,26 @@ class StableDiffusionExtension(
                             }
                             .respondWithError()
                     }
+            }
+        }
+
+        ephemeralSlashCommand {
+            name = "sdprogress"
+            description = "Get information about the current Stable Diffusion progress"
+
+            action {
+                respond {
+                    network.stableDiffusionProgress()
+                        .onSuccess { progress ->
+                            embed {
+                                title = "Current Stable Diffusion Progress"
+                                field("Progress") { progress.progress.toString() }
+                                field("ETA")
+                                timestamp = Clock.System.now() + progress.etaRelative.seconds
+                            }
+                        }
+                        .respondWithError()
+                }
             }
         }
     }

@@ -93,6 +93,20 @@ class Network(
     }
         .onFailure { it.printStackTrace() }
 
+    suspend fun stableDiffusionProgress() = runCatching {
+        client.get("$STABLE_DIFFUSION_URL/progress") {
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            timeout {
+                requestTimeoutMillis = Long.MAX_VALUE
+                connectTimeoutMillis = Long.MAX_VALUE
+            }
+        }
+            .bodyAsText()
+            .let { json.decodeFromString<StableDiffusionProgress>(it) }
+    }
+        .onFailure { it.printStackTrace() }
+
     suspend fun stableDiffusion(
         prompt: String,
         modelName: String? = null,

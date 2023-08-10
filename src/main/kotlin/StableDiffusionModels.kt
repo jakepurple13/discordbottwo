@@ -125,3 +125,28 @@ data class StableDiffusionSamplers(
     val name: String,
     val aliases: List<String>,
 )
+
+@Serializable
+data class StableDiffusionProgress(
+    val progress: Double,
+    @SerialName("eta_relative")
+    val etaRelative: Double,
+    val state: State,
+)
+
+@Serializable
+data class State(
+    val skipped: Boolean,
+    val interrupted: Boolean,
+    val job: String,
+    @SerialName("job_count")
+    val jobCount: Long,
+    @SerialName("job_timestamp")
+    val jobTimestamp: String,
+    @SerialName("job_no")
+    val jobNo: Long,
+    @SerialName("sampling_step")
+    val samplingStep: Long,
+    @SerialName("sampling_steps")
+    val samplingSteps: Long,
+)
