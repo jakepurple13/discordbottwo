@@ -27,7 +27,6 @@ suspend fun main(args: Array<String>) {
         Type.DiscordExtension -> {
             DiscordBotExtension(
                 token = token,
-                channelId = channelId,
                 network = network
             )
         }
