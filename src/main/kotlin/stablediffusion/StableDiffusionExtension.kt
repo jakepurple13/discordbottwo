@@ -24,6 +24,12 @@ class StableDiffusionExtension(
     override val name: String = "stablediffusion"
 
     override suspend fun setup() {
+        stableDiffusion()
+        sdProgress()
+        sdHelp()
+    }
+
+    private suspend fun stableDiffusion() {
         val argOptions = stableDiffusionNetwork.stableDiffusionModels().getOrNull()
         val argSamplers = stableDiffusionNetwork.stableDiffusionSamplers().getOrNull()
         publicSlashCommand(arguments = { DiffusionArgs(argOptions, argSamplers) }) {
@@ -71,7 +77,9 @@ class StableDiffusionExtension(
                     }
             }
         }
+    }
 
+    private suspend fun sdProgress() {
         ephemeralSlashCommand {
             name = "sdprogress"
             description = "Get information about the current Stable Diffusion progress"
@@ -91,7 +99,9 @@ class StableDiffusionExtension(
                 }
             }
         }
+    }
 
+    private suspend fun sdHelp() {
         ephemeralSlashCommand {
             name = "sdhelp"
             description = "See what information this stable diffusion instance has access to"
