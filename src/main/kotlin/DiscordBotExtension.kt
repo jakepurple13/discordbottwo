@@ -51,9 +51,11 @@ suspend fun DiscordBotExtension(
     if (SHOW_STARTUP_SHUTDOWN_MESSAGES) {
         bot.kordRef.guilds
             .mapNotNull { g ->
-                g
-                    .systemChannel
-                    ?.createMessage { content = "NekoBot is booting up...Please wait..." }
+                g.systemChannel
+                    ?.createMessage {
+                        suppressNotifications = true
+                        content = "NekoBot is booting up...Please wait..."
+                    }
             }
             .onEach {
                 it.edit {
@@ -65,15 +67,6 @@ suspend fun DiscordBotExtension(
                     
                     To get more Stable Diffusion models or loras to suggest, press on the buttons below!
                     To use Stable Diffusion, type `/stablediffusion`
-                    Here are the extensions we have access to. To use them, use <lora:[alias here]>
-                    ${
-                            stableDiffusionNetwork
-                                .stableDiffusionLoras()
-                                .getOrNull()
-                                .orEmpty()
-                                .joinToString("\n") { it.alias }
-                        }
-                    
                     To get a random neko image, type `/neko random`
                     To get a random cat image, type `/neko cat`
                     To view Marvel Snap cards, type `/snapcards`
@@ -96,6 +89,7 @@ suspend fun DiscordBotExtension(
                     bot.kordRef.guilds
                         .onEach { g ->
                             g.systemChannel?.createMessage {
+                                suppressNotifications = true
                                 embed {
                                     title = "Shutting Down for maintenance and updates..."
                                     timestamp = Clock.System.now()

@@ -8,6 +8,7 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.*
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.types.editingPaginator
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.interaction.followup.edit
 import dev.kord.rest.builder.message.create.embed
@@ -87,6 +88,35 @@ class StableDiffusionExtension(
                             }
                         }
                         .respondWithError()
+                }
+            }
+        }
+
+        ephemeralSlashCommand {
+            name = "sdhelp"
+            description = "See what information this stable diffusion instance has access to"
+
+            action {
+                respond {
+                    val loras = stableDiffusionNetwork.stableDiffusionLoras()
+                        .getOrNull()
+                        .orEmpty()
+                    val models = stableDiffusionNetwork.stableDiffusionModels()
+                        .getOrNull()
+                        .orEmpty()
+                    editingPaginator {
+                        keepEmbed = true
+                        page {
+                            title = "Models"
+                            description = "Here you can see what the models are and get more information about them"
+                            models.forEach { field(it.title, true) { it.modelName } }
+                        }
+                        page {
+                            title = "Loras"
+                            description = "Here you can see what the loras are and get more information about them"
+                            loras.forEach { field(it.name, true) { it.alias } }
+                        }
+                    }.send()
                 }
             }
         }

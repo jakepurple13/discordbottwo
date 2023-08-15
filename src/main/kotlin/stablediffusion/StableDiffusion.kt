@@ -7,5 +7,4 @@ object StableDiffusion {
     fun addToKordExtensions(stableDiffusionNetwork: StableDiffusionNetwork = StableDiffusionNetwork()) {
         add { StableDiffusionExtension(stableDiffusionNetwork) }
     }
-
 }
