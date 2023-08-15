@@ -8,9 +8,11 @@ import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.rest.builder.message.create.embed
 import io.ktor.client.request.forms.*
+import stablediffusion.StableDiffusionNetwork
 
 class NekoExtension(
-    private val network: Network
+    private val network: Network,
+    private val stableDiffusionNetwork: StableDiffusionNetwork
 ) : Extension() {
     override val name: String = "neko"
 
@@ -23,7 +25,17 @@ class NekoExtension(
                 respond {
                     when (arguments.nekoType) {
                         NekoType.Random -> network.loadRandomImage()
-                        NekoType.Amun -> network.stableDiffusion("")//network.pixrayLoad()
+                        NekoType.Amun -> stableDiffusionNetwork.stableDiffusion("")
+                            .map {
+                                it.imagesAsByteChannel()
+                                    .first()
+                                    .let {
+                                        LocalNekoImage(
+                                            byteReadChannel = it,
+                                            artist = "Stable Diffusion"
+                                        )
+                                    }
+                            }//network.pixrayLoad()
                         NekoType.Cat -> network.catApi()
                     }
                         .onSuccess { model ->

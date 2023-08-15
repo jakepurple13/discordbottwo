@@ -1,3 +1,5 @@
+import stablediffusion.StableDiffusionNetwork
+
 suspend fun main(args: Array<String>) {
     val token = args.first()
     val channelId = args[1]
@@ -9,9 +11,11 @@ suspend fun main(args: Array<String>) {
         replicateToken = replicateToken
     )
 
+    val stableDiffusionNetwork = StableDiffusionNetwork()
+
     when (TESTING) {
         Type.Testing -> {
-            network.stableDiffusionModels()
+            stableDiffusionNetwork.stableDiffusionModels()
                 .onSuccess { println(it) }
                 .onFailure { it.printStackTrace() }
         }
@@ -27,7 +31,8 @@ suspend fun main(args: Array<String>) {
         Type.DiscordExtension -> {
             DiscordBotExtension(
                 token = token,
-                network = network
+                network = network,
+                stableDiffusionNetwork = stableDiffusionNetwork
             )
         }
     }

@@ -13,10 +13,15 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import stablediffusion.StableDiffusion
+import stablediffusion.StableDiffusionNetwork
+
+private const val SHOW_STARTUP_SHUTDOWN_MESSAGES = false
 
 suspend fun DiscordBotExtension(
     token: String,
-    network: Network
+    network: Network,
+    stableDiffusionNetwork: StableDiffusionNetwork
 ) {
     val bot = ExtensibleBot(token) {
         chatCommands {
@@ -24,9 +29,9 @@ suspend fun DiscordBotExtension(
         }
 
         extensions {
-            add { NekoExtension(network) }
+            add { NekoExtension(network, stableDiffusionNetwork) }
             add { MarvelSnapExtension(network) }
-            add { StableDiffusionExtension(network) }
+            StableDiffusion.addToKordExtensions(stableDiffusionNetwork)
             help {
                 pingInReply = true
                 color { Purple }
@@ -43,57 +48,67 @@ suspend fun DiscordBotExtension(
         }
     }
 
-    bot.kordRef.guilds
-        .mapNotNull { g ->
-            g
-                .systemChannel
-                ?.createMessage { content = "NekoBot is booting up...Please wait..." }
-        }
-        .onEach {
-            it.edit {
-                content = "NekoBot is Online!"
-                embed {
-                    title = "NekoBot is Online!"
-                    description = """
+    if (SHOW_STARTUP_SHUTDOWN_MESSAGES) {
+        bot.kordRef.guilds
+            .mapNotNull { g ->
+                g
+                    .systemChannel
+                    ?.createMessage { content = "NekoBot is booting up...Please wait..." }
+            }
+            .onEach {
+                it.edit {
+                    content = "NekoBot is Online!"
+                    embed {
+                        title = "NekoBot is Online!"
+                        description = """
                     Meow is back online!
                     
                     To get more Stable Diffusion models or loras to suggest, press on the buttons below!
                     To use Stable Diffusion, type `/stablediffusion`
                     Here are the extensions we have access to. To use them, use <lora:[alias here]>
-                    ${network.stableDiffusionLoras().getOrNull().orEmpty().joinToString("\n") { it.alias }}
+                    ${
+                            stableDiffusionNetwork
+                                .stableDiffusionLoras()
+                                .getOrNull()
+                                .orEmpty()
+                                .joinToString("\n") { it.alias }
+                        }
                     
                     To get a random neko image, type `/neko random`
                     To get a random cat image, type `/neko cat`
                     To view Marvel Snap cards, type `/snapcards`
                 """.trimIndent()
-                    color = Emerald
-                }
-                actionRow {
-                    linkButton("https://huggingface.co") { label = "Stable Diffusion Models" }
-                    linkButton("https://civitai.com/") { label = "Models and Loras" }
+                        color = Emerald
+                    }
+                    actionRow {
+                        linkButton("https://huggingface.co") { label = "Stable Diffusion Models" }
+                        linkButton("https://civitai.com/") { label = "Models and Loras" }
+                    }
                 }
             }
-        }
-        .launchIn(CoroutineScope(Dispatchers.IO + Job()))
+            .launchIn(CoroutineScope(Dispatchers.IO + Job()))
+    }
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
             runBlocking {
-                bot.kordRef.guilds
-                    .onEach { g ->
-                        g.systemChannel?.createMessage {
-                            embed {
-                                title = "Shutting Down for maintenance and updates..."
-                                timestamp = Clock.System.now()
-                                description = "Please wait while I go through some maintenance."
-                                thumbnail {
-                                    url = "https://media.tenor.com/YTPLqiB6gLsAAAAC/sowwy-sorry.gif"
+                if (SHOW_STARTUP_SHUTDOWN_MESSAGES) {
+                    bot.kordRef.guilds
+                        .onEach { g ->
+                            g.systemChannel?.createMessage {
+                                embed {
+                                    title = "Shutting Down for maintenance and updates..."
+                                    timestamp = Clock.System.now()
+                                    description = "Please wait while I go through some maintenance."
+                                    thumbnail {
+                                        url = "https://media.tenor.com/YTPLqiB6gLsAAAAC/sowwy-sorry.gif"
+                                    }
+                                    color = Red
                                 }
-                                color = Red
                             }
                         }
-                    }
-                    .lastOrNull()
+                        .lastOrNull()
+                }
                 bot.stop()
             }
         }

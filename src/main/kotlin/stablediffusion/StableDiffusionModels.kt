@@ -1,14 +1,12 @@
+package stablediffusion
+
 import io.ktor.utils.io.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.util.*
 
 @Serializable
-sealed class StableDiffusionTxt2Image
-
-@Serializable
-class StableDiffusionBody(
+internal class StableDiffusionBody(
     val seed: Long,
     val prompt: String,
     val cfgScale: Double,
@@ -21,25 +19,10 @@ class StableDiffusionBody(
     val batchSize: Long = 1,
     @SerialName("override_settings")
     val overrideOptions: OverriddenOptions?
-) : StableDiffusionTxt2Image()
+)
 
 @Serializable
-class StableDiffusionBodyNoSeed(
-    val prompt: String,
-    val cfgScale: Double,
-    val steps: Int,
-    @SerialName("sampler_index")
-    val samplerIndex: String,
-    @SerialName("negative_prompt")
-    val negativePrompt: String = "",
-    @SerialName("batch_size")
-    val batchSize: Long = 1,
-    @SerialName("override_settings")
-    val overrideOptions: OverriddenOptions?
-) : StableDiffusionTxt2Image()
-
-@Serializable
-data class OverriddenOptions(
+internal data class OverriddenOptions(
     @SerialName("sd_model_checkpoint")
     val sdModelCheckpoint: String,
     @SerialName("filter_nsfw")
@@ -47,16 +30,22 @@ data class OverriddenOptions(
 )
 
 @Serializable
-data class StableDiffusionResponse(
+data class StableDiffusionInfo(
     val images: List<String>,
     val parameters: Parameters,
-    val info: String,
+    val info: StableDiffusionResponseInfo,
 ) {
-    fun infoToModel(json: Json) = json.decodeFromString<StableDiffusionResponseInfo>(info)
     fun imagesAsByteChannel() = images.map {
         ByteReadChannel(Base64.getDecoder().decode(it))
     }
 }
+
+@Serializable
+internal data class StableDiffusionResponse(
+    val images: List<String>,
+    val parameters: Parameters,
+    val info: String,
+)
 
 @Serializable
 data class Parameters(

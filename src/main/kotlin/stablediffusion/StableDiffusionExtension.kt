@@ -1,5 +1,7 @@
 @file:Suppress("INLINE_FROM_HIGHER_PLATFORM")
+package stablediffusion
 
+import Emerald
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.optionalStringChoice
 import com.kotlindiscord.kord.extensions.commands.converters.impl.*
@@ -12,18 +14,17 @@ import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
 import io.ktor.client.request.forms.*
 import kotlinx.datetime.Clock
+import respondWithError
 import kotlin.time.Duration.Companion.seconds
 
 class StableDiffusionExtension(
-    private val network: Network
+    private val stableDiffusionNetwork: StableDiffusionNetwork = StableDiffusionNetwork()
 ) : Extension() {
     override val name: String = "stablediffusion"
 
     override suspend fun setup() {
-        val argOptions = network.stableDiffusionModels().getOrNull()
-        println(argOptions)
-        val argSamplers = network.stableDiffusionSamplers().getOrNull()
-        println(argSamplers)
+        val argOptions = stableDiffusionNetwork.stableDiffusionModels().getOrNull()
+        val argSamplers = stableDiffusionNetwork.stableDiffusionSamplers().getOrNull()
         publicSlashCommand(arguments = { DiffusionArgs(argOptions, argSamplers) }) {
             name = "stablediffusion"
             description = "Get a ai generated image"
@@ -31,7 +32,7 @@ class StableDiffusionExtension(
             action {
                 respond { content = "Please wait while I generate an image..." }
                     .edit {
-                        network.retrieveStableDiffusion(
+                        stableDiffusionNetwork.stableDiffusion(
                             prompt = arguments.prompt,
                             modelName = arguments.model,
                             negativePrompt = arguments.negativePrompt.orEmpty(),
@@ -41,7 +42,7 @@ class StableDiffusionExtension(
                             seed = arguments.seed
                         )
                             .onSuccess { model ->
-                                val info = model.infoToModel(network.json)
+                                val info = model.info
                                 content = "${member?.mention} your image is ready!"
                                 embed {
                                     title = "Here is your neko image!"
@@ -76,7 +77,7 @@ class StableDiffusionExtension(
 
             action {
                 respond {
-                    network.stableDiffusionProgress()
+                    stableDiffusionNetwork.stableDiffusionProgress()
                         .onSuccess { progress ->
                             embed {
                                 title = "Current Stable Diffusion Progress"

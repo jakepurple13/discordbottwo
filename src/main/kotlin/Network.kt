@@ -5,18 +5,15 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.utils.io.*
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
-import java.util.*
 
-private const val STABLE_DIFFUSION_URL = "http://127.0.0.1:7860/sdapi/v1"
 
 class Network(
     private val catApiToken: String = "",
     private val replicateToken: String = ""
 ) {
-    val json = Json {
+    private val json = Json {
         isLenient = true
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -49,160 +46,6 @@ class Network(
         client.get("https://marvelsnapzone.com/getinfo/?searchtype=cards&searchcardstype=true")
             .bodyAsText()
             .let { json.decodeFromString<MarvelSnapModel>(it) }
-    }
-
-    suspend fun stableDiffusionLoras() = runCatching {
-        client.get("$STABLE_DIFFUSION_URL/loras") {
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
-        }
-            .bodyAsText()
-            .let { json.decodeFromString<List<StableDiffusionLora>>(it) }
-    }
-        .onFailure { it.printStackTrace() }
-
-    suspend fun stableDiffusionSamplers() = runCatching {
-        client.get("$STABLE_DIFFUSION_URL/samplers") {
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
-        }
-            .bodyAsText()
-            .let { json.decodeFromString<List<StableDiffusionSamplers>>(it) }
-    }
-        .onFailure { it.printStackTrace() }
-
-    suspend fun stableDiffusionModels() = runCatching {
-        client.get("$STABLE_DIFFUSION_URL/sd-models") {
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
-        }
-            .bodyAsText()
-            .let { json.decodeFromString<List<StableDiffusionModel>>(it) }
-    }
-        .onFailure { it.printStackTrace() }
-
-    suspend fun stableDiffusionProgress() = runCatching {
-        client.get("$STABLE_DIFFUSION_URL/progress") {
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
-        }
-            .bodyAsText()
-            .let { json.decodeFromString<StableDiffusionProgress>(it) }
-    }
-        .onFailure { it.printStackTrace() }
-
-    suspend fun stableDiffusion(
-        prompt: String,
-        modelName: String? = null,
-        cfgScale: Double = 7.0,
-        steps: Int = 20,
-        negativePrompt: String = "",
-        sampler: String? = null,
-        seed: Long = -1
-    ) = runCatching {
-        client.post("$STABLE_DIFFUSION_URL/txt2img") {
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            setBody(
-                StableDiffusionBody(
-                    prompt = prompt,
-                    negativePrompt = negativePrompt,
-                    cfgScale = cfgScale,
-                    steps = steps,
-                    samplerIndex = sampler ?: "Euler a",
-                    seed = seed,
-                    overrideOptions = modelName?.let {
-                        OverriddenOptions(
-                            sdModelCheckpoint = it
-                        )
-                    }
-                )
-            )
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
-        }
-            .bodyAsText()
-            .let { json.decodeFromString<StableDiffusionResponse>(it) }
-            .also { println(it) }
-            .images
-            .first()
-            .let {
-                LocalNekoImage(
-                    byteReadChannel = ByteReadChannel(Base64.getDecoder().decode(it)),
-                    artist = "Stable Diffusion"
-                )
-            }
-    }
-
-    suspend fun retrieveStableDiffusion(
-        prompt: String,
-        modelName: String? = null,
-        cfgScale: Double = 7.0,
-        steps: Int = 20,
-        negativePrompt: String = "",
-        sampler: String? = null,
-        seed: Long?
-    ) = runCatching {
-        client.post("$STABLE_DIFFUSION_URL/txt2img") {
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            setBody(
-                if (seed != null) {
-                    StableDiffusionBody(
-                        prompt = prompt,
-                        negativePrompt = negativePrompt,
-                        cfgScale = cfgScale,
-                        steps = steps,
-                        samplerIndex = sampler ?: "Euler a",
-                        seed = seed,
-                        overrideOptions = modelName?.let {
-                            OverriddenOptions(
-                                sdModelCheckpoint = it
-                            )
-                        }
-                    )
-                } else {
-                    StableDiffusionBodyNoSeed(
-                        prompt = prompt,
-                        negativePrompt = negativePrompt,
-                        cfgScale = cfgScale,
-                        steps = steps,
-                        samplerIndex = sampler ?: "Euler a",
-                        overrideOptions = modelName?.let {
-                            OverriddenOptions(
-                                sdModelCheckpoint = it
-                            )
-                        }
-                    )
-                }
-            )
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
-        }
-            .bodyAsText()
-            .let { json.decodeFromString<StableDiffusionResponse>(it) }
-            .also { println(it) }
-
     }
 
     suspend fun pixrayLoad(): Result<NekoImage> {
