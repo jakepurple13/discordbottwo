@@ -22,7 +22,7 @@ class StableDiffusionNetwork(
     private val client: HttpClient = HttpClient {
         install(ContentNegotiation) { json(json) }
         install(HttpTimeout)
-    }
+    },
 ) {
     suspend fun stableDiffusionLoras() = runCatching {
         client.get("$stableDiffusionUrl/loras") {
@@ -87,7 +87,8 @@ class StableDiffusionNetwork(
         steps: Int = 20,
         negativePrompt: String = "",
         sampler: String? = null,
-        seed: Long? = null
+        seed: Long? = null,
+        clipSkip: Long = 1,
     ) = runCatching {
         client.post("$stableDiffusionUrl/txt2img") {
             contentType(ContentType.Application.Json)
@@ -102,7 +103,8 @@ class StableDiffusionNetwork(
                     seed = seed ?: -1,
                     overrideOptions = modelName?.let {
                         OverriddenOptions(
-                            sdModelCheckpoint = it
+                            sdModelCheckpoint = it,
+                            clipSkip = clipSkip
                         )
                     }
                 )

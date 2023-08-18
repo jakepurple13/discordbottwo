@@ -46,7 +46,8 @@ class StableDiffusionExtension(
                             cfgScale = arguments.cfgScale,
                             steps = arguments.steps,
                             sampler = arguments.sampler,
-                            seed = arguments.seed
+                            seed = arguments.seed,
+                            clipSkip = arguments.clipSkip
                         )
                             .onSuccess { model ->
                                 val info = model.info
@@ -181,6 +182,14 @@ class StableDiffusionExtension(
         val seed by optionalLong {
             name = "seed"
             description = "A seed to generate similar images"
+        }
+
+        val clipSkip by defaultingLong {
+            name = "clipskip"
+            description = "Controls how early the processing of the prompt should be stopped"
+            defaultValue = 1
+            minValue = 1
+            maxValue = 12
         }
     }
 }

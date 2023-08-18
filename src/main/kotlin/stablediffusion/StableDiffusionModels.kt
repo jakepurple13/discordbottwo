@@ -26,7 +26,9 @@ internal data class OverriddenOptions(
     @SerialName("sd_model_checkpoint")
     val sdModelCheckpoint: String,
     @SerialName("filter_nsfw")
-    val filterNsfw: Boolean = false
+    val filterNsfw: Boolean = false,
+    @SerialName("clip_skip")
+    val clipSkip: Long = 1,
 )
 
 @Serializable
