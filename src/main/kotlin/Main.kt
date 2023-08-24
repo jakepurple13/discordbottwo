@@ -15,8 +15,8 @@ suspend fun main(args: Array<String>) {
 
     when (TESTING) {
         Type.Testing -> {
-            stableDiffusionNetwork.stableDiffusionModels()
-                .onSuccess { println(it) }
+            stableDiffusionNetwork.stableDiffusion("cat")
+                .onSuccess { println(it.info) }
                 .onFailure { it.printStackTrace() }
         }
 
