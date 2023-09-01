@@ -28,10 +28,6 @@ class StableDiffusionNetwork(
         client.get("$stableDiffusionUrl/loras") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
         }
             .bodyAsText()
             .let { json.decodeFromString<List<StableDiffusionLora>>(it) }
@@ -42,10 +38,6 @@ class StableDiffusionNetwork(
         client.get("$stableDiffusionUrl/samplers") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
         }
             .bodyAsText()
             .let { json.decodeFromString<List<StableDiffusionSamplers>>(it) }
@@ -56,10 +48,6 @@ class StableDiffusionNetwork(
         client.get("$stableDiffusionUrl/sd-models") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
-            timeout {
-                requestTimeoutMillis = Long.MAX_VALUE
-                connectTimeoutMillis = Long.MAX_VALUE
-            }
         }
             .bodyAsText()
             .let { json.decodeFromString<List<StableDiffusionModel>>(it) }
@@ -89,6 +77,8 @@ class StableDiffusionNetwork(
         sampler: String? = null,
         seed: Long? = null,
         clipSkip: Long = 1,
+        width: Long = 512,
+        height: Long = 512,
     ) = runCatching {
         client.post("$stableDiffusionUrl/txt2img") {
             contentType(ContentType.Application.Json)
@@ -106,7 +96,9 @@ class StableDiffusionNetwork(
                             sdModelCheckpoint = it,
                             clipSkip = clipSkip
                         )
-                    }
+                    },
+                    width = width,
+                    height = height
                 )
             )
             timeout {

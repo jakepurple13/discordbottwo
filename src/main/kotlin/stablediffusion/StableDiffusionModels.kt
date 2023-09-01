@@ -18,7 +18,9 @@ internal class StableDiffusionBody(
     @SerialName("batch_size")
     val batchSize: Long = 1,
     @SerialName("override_settings")
-    val overrideOptions: OverriddenOptions?
+    val overrideOptions: OverriddenOptions?,
+    val width: Long,
+    val height: Long,
 )
 
 @Serializable
@@ -90,8 +92,8 @@ data class Parameters(
     val width: Long,
     val height: Long,
     @SerialName("restore_faces")
-    val restoreFaces: Boolean,
-    val tiling: Boolean,
+    val restoreFaces: Boolean?,
+    val tiling: Boolean?,
     @SerialName("do_not_save_samples")
     val doNotSaveSamples: Boolean,
     @SerialName("do_not_save_grid")
@@ -99,13 +101,13 @@ data class Parameters(
     @SerialName("negative_prompt")
     val negativePrompt: String?,
     @SerialName("s_min_uncond")
-    val sMinUncond: Double,
+    val sMinUncond: Double?,
     @SerialName("s_churn")
-    val sChurn: Double,
+    val sChurn: Double?,
     @SerialName("s_tmin")
-    val sTmin: Double,
+    val sTmin: Double?,
     @SerialName("s_noise")
-    val sNoise: Double,
+    val sNoise: Double?,
     @SerialName("override_settings_restore_afterwards")
     val overrideSettingsRestoreAfterwards: Boolean,
     @SerialName("sampler_index")

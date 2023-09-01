@@ -4,14 +4,11 @@ import dev.kord.core.behavior.edit
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import stablediffusion.StableDiffusion
 import stablediffusion.StableDiffusionNetwork
@@ -30,7 +27,7 @@ suspend fun DiscordBotExtension(
 
         extensions {
             add { NekoExtension(network, stableDiffusionNetwork) }
-            add { MarvelSnapExtension(network) }
+            //add { MarvelSnapExtension(network) }
             StableDiffusion.addToKordExtensions(stableDiffusionNetwork)
             help {
                 pingInReply = true
@@ -110,5 +107,5 @@ suspend fun DiscordBotExtension(
 
     bot.start()
 
-    Thread.currentThread().join()
+    withContext(Dispatchers.IO) { Thread.currentThread().join() }
 }

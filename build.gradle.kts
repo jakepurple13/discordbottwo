@@ -52,6 +52,7 @@ dependencies {
     implementation("dev.kord:kord-common")
     implementation("io.realm.kotlin:library-base:$realmVersion")
     implementation("com.kotlindiscord.kord.extensions:kord-extensions:1.5.8-SNAPSHOT")
+    implementation("org.slf4j:slf4j-simple:2.0.7")
 }
 
 tasks.test {

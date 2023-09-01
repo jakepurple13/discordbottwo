@@ -4,7 +4,8 @@ package stablediffusion
 
 import Emerald
 import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.optionalStringChoice
+import com.kotlindiscord.kord.extensions.commands.application.slash.converters.ChoiceEnum
+import com.kotlindiscord.kord.extensions.commands.application.slash.converters.impl.defaultingEnumChoice
 import com.kotlindiscord.kord.extensions.commands.converters.impl.*
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
@@ -39,11 +40,9 @@ class StableDiffusionExtension(
     }
 
     private suspend fun stableDiffusion() {
-        val argOptions = stableDiffusionNetwork.stableDiffusionModels().getOrNull()
-        val argSamplers = stableDiffusionNetwork.stableDiffusionSamplers().getOrNull()
-        publicSlashCommand(arguments = { DiffusionArgs(argOptions, argSamplers) }) {
+        publicSlashCommand(::DiffusionArgs) {
             name = "stablediffusion"
-            description = "Get a ai generated image"
+            description = "Get an ai generated image"
 
             action {
                 respond { content = "Please wait while I generate an image..." }
@@ -52,11 +51,13 @@ class StableDiffusionExtension(
                             prompt = arguments.prompt,
                             modelName = arguments.model,
                             negativePrompt = arguments.negativePrompt.orEmpty(),
-                            cfgScale = arguments.cfgScale,
-                            steps = arguments.steps,
-                            sampler = arguments.sampler,
                             seed = arguments.seed,
-                            clipSkip = arguments.clipSkip
+                            cfgScale = arguments.cfgScale,
+                            sampler = arguments.sampler,
+                            steps = arguments.steps,
+                            clipSkip = arguments.clipSkip,
+                            width = arguments.imageSize.width,
+                            height = arguments.imageSize.height
                         )
                             .onSuccess { model ->
                                 val info = model.info
@@ -134,17 +135,25 @@ class StableDiffusionExtension(
                     val models = stableDiffusionNetwork.stableDiffusionModels()
                         .getOrNull()
                         .orEmpty()
+                    val samplers = stableDiffusionNetwork.stableDiffusionSamplers()
+                        .getOrNull()
+                        .orEmpty()
                     editingPaginator {
                         keepEmbed = true
                         page {
                             title = "Models"
                             description = "Here you can see what the models are and get more information about them"
-                            models.forEach { field(it.title, true) { it.modelName } }
+                            models.forEach { field(it.title) }
                         }
                         page {
                             title = "Loras"
                             description = "Here you can see what the loras are and get more information about them"
                             loras.forEach { field(it.name, true) { it.alias } }
+                        }
+                        page {
+                            title = "Samplers"
+                            description = "Here you can see what the loras are and get more information about them"
+                            samplers.forEach { field(it.name) }
                         }
                     }.send()
                 }
@@ -152,26 +161,30 @@ class StableDiffusionExtension(
         }
     }
 
-    inner class DiffusionArgs(
-        options: List<StableDiffusionModel>?,
-        samplers: List<StableDiffusionSamplers>?,
-    ) : Arguments() {
+    inner class DiffusionArgs : Arguments() {
         val prompt by string {
             name = "prompt"
             description = "Give me a prompt!"
         }
 
-        val model by optionalStringChoice {
+        val model by optionalString {
             name = "modeltype"
             description = "If you don't want to use the default model, you can change it!"
-            options?.forEach {
-                choice(it.title, it.title)
-            }
         }
 
         val negativePrompt by optionalString {
             name = "negativeprompt"
             description = "If you want to include things NOT to add"
+        }
+
+        val seed by optionalLong {
+            name = "seed"
+            description = "A seed to generate similar images"
+        }
+
+        val sampler by optionalString {
+            name = "sampler"
+            description = "Which sampling method to use"
         }
 
         val cfgScale by defaultingDecimal {
@@ -190,19 +203,6 @@ class StableDiffusionExtension(
             maxValue = 150
         }
 
-        val sampler by optionalStringChoice {
-            name = "sampler"
-            description = "Which sampling method to use"
-            samplers?.forEach {
-                choice(it.name, it.name)
-            }
-        }
-
-        val seed by optionalLong {
-            name = "seed"
-            description = "A seed to generate similar images"
-        }
-
         val clipSkip by defaultingLong {
             name = "clipskip"
             description = "Controls how early the processing of the prompt should be stopped"
@@ -210,5 +210,21 @@ class StableDiffusionExtension(
             minValue = 1
             maxValue = 12
         }
+
+        val imageSize by defaultingEnumChoice<StableDiffusionSize> {
+            name = "imagesize"
+            description = "The resolution! If using an XL model, it's recommended to use 1024x1024"
+            typeName = "Image Size"
+            defaultValue = StableDiffusionSize.FiveTwelveByFiveTwelve
+        }
+    }
+}
+
+enum class StableDiffusionSize(val height: Long, val width: Long) : ChoiceEnum {
+    FiveTwelveByFiveTwelve(512, 512) {
+        override val readableName: String get() = "512x512"
+    },
+    Ten24ByTen24(1024, 1024) {
+        override val readableName: String get() = "1024x1024"
     }
 }
